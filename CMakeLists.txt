@@ -3,6 +3,9 @@ cmake_minimum_required(VERSION 3.16.3)
 project(hello)
 set (CMAKE_CXX_STANDARD 20)
 
+# zLib
+find_package(ZLIB)
+# Include LibElf
 include(${CMAKE_CURRENT_SOURCE_DIR}/FindLibElf.cmake)
 if (NOT LIBELF_FOUND)
     message(FATAL_ERROR "Unable to locate libelf")
@@ -42,4 +45,4 @@ add_executable ( ${CMAKE_PROJECT_NAME} hello.cpp vmlinux.h hello.skel.h)
 
 # Link Libbpf
 # TODO: Make libbpf dynamic and add a real search
-target_link_libraries(${CMAKE_PROJECT_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/libbpf/build/libbpf/libbpf.a libelf)
+target_link_libraries(${CMAKE_PROJECT_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/libbpf/build/libbpf/libbpf.a libelf ZLIB::ZLIB)
