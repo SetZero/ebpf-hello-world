@@ -43,6 +43,7 @@ add_compile_options(-Wall -Wextra -pedantic)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 add_executable ( ${CMAKE_PROJECT_NAME} hello.cpp vmlinux.h hello.skel.h)
+target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE DLIBCXX_ENABLE_INCOMPLETE_FEATURES=ON)
 
 # Link Libbpf
 # TODO: Make libbpf dynamic and add a real search

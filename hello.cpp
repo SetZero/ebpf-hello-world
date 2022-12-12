@@ -3,6 +3,8 @@
 #include <sys/resource.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <bpf/bpf.h>
+#include <bpf/libbpf.h>
 
 #include <string>
 #include <iostream>
@@ -10,17 +12,15 @@
 #include <fstream>
 #include <streambuf>
 #include <stdexcept>
-#include <bpf/bpf.h>
 
 extern "C"
 {
 #include "hello.skel.h"
-#include <bpf/libbpf.h>
 }
 
 struct hello_bpf *obj;
 
-static rlimit rlim = {
+static constexpr rlimit rlim = {
     .rlim_cur = 512UL << 20,
     .rlim_max = 512UL << 20,
 };
@@ -39,17 +39,25 @@ public:
             ss << "Failed to open hello bpf: " << std::hex << mEbpfObj;
             throw std::runtime_error(ss.str());
         }
-        else
-        {
-            std::cout << "Successfully opend: " << std::hex << mEbpfObj << std::endl;
-        }
 
         handle_error(hello_bpf__load(mEbpfObj), "load hello bpf");
         handle_error(hello_bpf__attach(mEbpfObj), "attach hello bpf");
         read_trace_pipe();
     }
 
-    void handle_error(int statusCode, const std::string &command)
+    ~EbpfLoader() noexcept
+    {
+        if (mEbpfObj != nullptr)
+            hello_bpf__destroy(mEbpfObj);
+    }
+
+    EbpfLoader(const EbpfLoader &other) = delete;
+    EbpfLoader(const EbpfLoader &&other) = delete;
+    EbpfLoader &operator=(const EbpfLoader &other) = delete;
+    EbpfLoader &operator=(const EbpfLoader &&other) = delete;
+
+private:
+    void handle_error(int statusCode, const std::string &command) const
     {
         if (statusCode != 0)
         {
@@ -59,14 +67,7 @@ public:
         }
     }
 
-    ~EbpfLoader()
-    {
-        if (mEbpfObj != nullptr)
-            hello_bpf__destroy(mEbpfObj);
-    }
-
-private:
-    void read_trace_pipe()
+    void read_trace_pipe() const
     {
         std::ifstream file("/sys/kernel/debug/tracing/trace_pipe", std::ios::in);
         std::string line;
@@ -81,7 +82,7 @@ private:
     hello_bpf *mEbpfObj = nullptr;
 };
 
-bool isPrivileged()
+[[nodiscard]] bool isPrivileged() noexcept
 {
     const auto uid = getuid();
     const auto euid = geteuid();
