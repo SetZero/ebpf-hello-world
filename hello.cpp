@@ -7,6 +7,8 @@
 #include <string>
 #include <iostream>
 #include <sstream>
+#include <fstream>
+#include <streambuf>
 #include <stdexcept>
 #include <bpf/bpf.h>
 
@@ -44,6 +46,7 @@ public:
 
         handle_error(hello_bpf__load(mEbpfObj), "load hello bpf");
         handle_error(hello_bpf__attach(mEbpfObj), "attach hello bpf");
+        read_trace_pipe();
     }
 
     void handle_error(int statusCode, const std::string &command)
@@ -63,10 +66,36 @@ public:
     }
 
 private:
+    void read_trace_pipe()
+    {
+        std::ifstream file("/sys/kernel/debug/tracing/trace_pipe", std::ios::in);
+        std::string line;
+
+        while (std::getline(file, line))
+        {
+            std::istringstream iss(line);
+            std::cout << iss.str() << '\n';
+        }
+    }
+
     hello_bpf *mEbpfObj = nullptr;
 };
 
+bool isPrivileged()
+{
+    const auto uid = getuid();
+    const auto euid = geteuid();
+    return uid != euid || uid <= 0;
+}
+
 int main()
 {
-    EbpfLoader loader;
+    if (isPrivileged())
+    {
+        EbpfLoader loader;
+    }
+    else
+    {
+        std::cerr << "You need root permissions to execute this: " << getuid() << " vs. " << geteuid() << '\n';
+    }
 }

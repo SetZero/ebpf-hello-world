@@ -35,6 +35,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/hello.bpf.c ${CMAKE_CURRENT_BINARY_DI
 add_custom_command(
   OUTPUT hello.bpf.o
   COMMAND clang -g -O2 -target bpf -D__TARGET_ARCH_x86_64 -I . -c hello.bpf.c -o hello.bpf.o
+  DEPENDS hello.bpf.c
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 )
 
