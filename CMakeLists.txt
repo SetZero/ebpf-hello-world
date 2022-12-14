@@ -29,7 +29,7 @@ add_custom_command(
 )
 
 # Copy bpf file to build dir
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/hello.bpf.c ${CMAKE_CURRENT_BINARY_DIR}/hello.bpf.c COPYONLY)
+file(COPY bpf/hello.bpf.c bpf/map.h DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 # Compile bpf file
 add_custom_command(
@@ -47,4 +47,4 @@ target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE DLIBCXX_ENABLE_INCOMPLE
 
 # Link Libbpf
 # TODO: Make libbpf dynamic and add a real search
-target_link_libraries(${CMAKE_PROJECT_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/libbpf/build/libbpf/libbpf.a libelf ZLIB::ZLIB)
+target_link_libraries(${CMAKE_PROJECT_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/libbpf/build/libbpf/libbpf.a libelf ZLIB::ZLIB cap)
